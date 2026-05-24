@@ -1,62 +1,127 @@
+# ConnectResource / ResourceGroup
+
+`ConnectResource` abstracts the "write resource" bound to a TCP connection; `ResourceGroup` is the factory that produces them. Default implementations live in [getwayServer/Resource.go](https://github.com/wangshiben/gogetway/blob/master/getwayServer/Resource.go) and [getwayServer/resourceGroup.go](https://github.com/wangshiben/gogetway/blob/master/getwayServer/resourceGroup.go), and they work by "map-by-client-address and reuse".
+
+If you need per-tenant isolation, per-client writers, or want to ship traffic into a DB/Kafka, implementing these two interfaces is all you need.
+
+---
+
 ## 1. `ConnectResource` Interface
 
-Represents a writable resource bound to a network connection, encapsulating writing capabilities, write queues, and underlying locks.
+```go
+type ConnectResource interface {
+    Writer() io.Writer
+    WriteFunc() WriteFunc
+    WriteQueue() *WriteQueue
+    GetLock() lockMap.Lock
+    WriteType() string
+}
+```
 
-### Method List
+| Method | Return | Notes |
+|---|---|---|
+| `Writer()` | `io.Writer` | Default writer — **only used when `WriteFunc()` returns nil** |
+| `WriteFunc()` | `WriteFunc` | Custom write function — **takes precedence over `Writer()`**; called directly when non-nil |
+| `WriteQueue()` | `*WriteQueue` | Serial write queue to avoid interleaving across goroutines |
+| `GetLock()` | `lockMap.Lock` | Connection lock; used by `IncreaseGetIndex` to generate ordering numbers |
+| `WriteType()` | string | Tag only; currently does not affect logic (`"File"` / `"Other"`) |
 
-| Method | Description |
-|--------|-------------|
-| `Writer() io.Writer` | Returns a standard `io.Writer` for direct data writing. |
-| `WriteFunc() WriteFunc` | Returns a custom write function (typically used for asynchronous or batch writes), usually with the signature `func([]byte) error`. |
-| `WriteQueue() *WriteQueue` | Returns a pointer to the associated write queue for managing pending data buffers. |
-| `GetLock() lockMap.Lock` | Gets the underlying lock associated with this resource (for synchronizing write operations or state changes). |
-| `WriteType() string` | Returns the write type identifier currently used by the resource (such as `"tcp"`, `"websocket"`, `"buffered"`, etc.), for debugging or routing strategies. |
-
-> **Note**: Commented-out methods like `currentIndex()` indicate that internal index structures were once considered but are currently disabled.
+Default impl: `DefaultResource` — see [getwayServer/Resource.go:8](https://github.com/wangshiben/gogetway/blob/master/getwayServer/Resource.go#L8).
 
 ---
 
 ## 2. `ResourceGroup` Interface
 
-Used to dynamically create and manage `ConnectResource` instances based on context or origin, implementing resource pooling or on-demand initialization.
+```go
+type ResourceGroup interface {
+    io.Closer
+    GetResource(ctx context.Context, Connect net.Conn) (ConnectResource, ConnectionCloseHook, error)
+    NewResourceFunc(ctx context.Context, From string) NewResourceFunc
+}
 
-### Method List
+type NewResourceFunc func(ctx context.Context, From string) (resource ConnectResource, err error)
+```
 
-#### `GetResource(ctx context.Context, Connect net.Conn) (resource ConnectResource, err error)`
+| Method | Inputs | Returns | Notes |
+|---|---|---|---|
+| `Close()` | none | `error` | Called at process shutdown; flushes / closes the underlying writer |
+| `GetResource(ctx, conn)` | ctx + client conn | resource + closeHook + error | One resource per connection (usually reused per client address) |
+| `NewResourceFunc(ctx, from)` | ctx + client address | `NewResourceFunc` | Called on the first connection from a new address; produces a fresh `ConnectResource` |
 
-- **Function**: Obtain the corresponding `ConnectResource` based on the incoming network connection `net.Conn`.
-- **Usage**: Called by the framework when a new connection is established to bind resources.
-- **Parameters**:
-    - `ctx`: Request context, which can be used to pass metadata or control lifecycle.
-    - `Connect`: Underlying network connection (e.g., TCP connection).
-- **Returns**:
-    - `resource`: Resource instance bound to the connection.
-    - `err`: Error if initialization fails.
+### 2.1 `ConnectionCloseHook`
+
+```go
+type ConnectionCloseHook func(resource ConnectResource)
+```
+
+Returned alongside the resource by `GetResource`. The main loop in `StartListen` invokes it when each client connection ends.
+Default behavior: `lock.Release(1)` — decrements the refcount; the resource becomes reclaimable when `LockGroup.CheckLocks` next runs.
+
+```go
+func (g *CustomResourceGroup) GetResource(ctx context.Context, conn net.Conn) (ConnectResource, ConnectionCloseHook, error) {
+    res := newResource()
+    return res, func(r ConnectResource) {
+        res.Flush()
+        metrics.Inc("connection_closed")
+    }, nil
+}
+```
 
 ---
 
-#### `NewResourceFunc(ctx context.Context, From string) NewResourceFunc`
+## 3. Wiring it In
 
-- **Function**: Returns a factory function for creating new `ConnectResource` instances.
-- **Usage**: Supports custom resource creation logic based on source (`From`) (e.g., different write strategies for different clients).
-- **Parameters**:
-    - `ctx`: Context.
-    - `From`: Source identifier (such as service name, IP, protocol type, etc.).
-- **Returns**:
-    - `NewResourceFunc`: Function type, typically with the signature `func(net.Conn) (ConnectResource, error)`.
+Two ways to install a custom `ResourceGroup`:
 
-> **Typical Use Case**:  
-> In proxy or gateway services, return different `WriteFunc` or `WriteQueue` configurations based on `From` (e.g., `"internal-service"` vs `"external-client"`).
+1. Call `server.UpdateResourceGroup(rg)` to swap an existing server's resource group (`rg` must not be nil — otherwise panics).
+2. Construct directly with `NewSimpleTcpServerWithResourceGroup(forward, local, listenType, rg)`.
 
 ---
 
-## Additional Notes
+## 4. Default Implementation Highlights
 
-- **`WriteFunc` and `WriteQueue` Coordination**:  
-  Typically, `WriteFunc` pushes data into `WriteQueue`, which is consumed asynchronously by background goroutines that call `Writer().Write()`, thus avoiding blocking business logic.
+- `DefaultResourceGroup` is backed by `lockMap.LockGroup`; it maps + reuses by client address (`net.Conn.RemoteAddr()`).
+- Multiple connections from the same address share one `ConnectResource` + write queue, so the on-disk packet order matches the link order.
+- When the refcount drops to 0 and the `CheckLocks` cycle elapses, the resource is reclaimed.
 
-- **Thread Safety**:  
-  All concurrent write operations to `ConnectResource` should acquire the lock via `GetLock()` or rely on the internal synchronization mechanism of `WriteQueue`.
+---
 
-- **Lifecycle**:  
-  The lifecycle of `ConnectResource` is typically consistent with `net.Conn`; when the connection closes, its `WriteQueue` should be cleaned up and lock resources released.
+## 5. Companion: `WriteFunc`, `WriteQueue`
+
+### `WriteFunc`
+
+```go
+type WriteFunc func(data []byte, ctx context.Context) (offset int, err error)
+```
+
+`data` has already been framed by `proto.WriteProto` (MagicHeader + timestamp + Type + Length + from...to + `\n` + body) — you can write directly to a DB, Kafka, or a custom log format.
+`ctx` exposes `ListenType` / `FromIP` / `ToIP` / `FromTo` (constants in [getwayServer/consts.go](https://github.com/wangshiben/gogetway/blob/master/getwayServer/consts.go)).
+
+```go
+writeFunc := func(data []byte, ctx context.Context) (int, error) {
+    fromTo, _ := ctx.Value(getwayServer.FromTo).(string)
+    log.Printf("link=%s bytes=%d", fromTo, len(data))
+    return kafkaProducer.Send(data)
+}
+```
+
+### `WriteQueue`
+
+```go
+func NewWriteQueue(ctx context.Context) *WriteQueue
+func (w *WriteQueue) AddItem(ctx context.Context, Data []byte, Index uint64, HookWrite WriteFunc)
+```
+
+Calls `HookWrite` in `Index` order so concurrent writes do not interleave. `Index` comes from `lock.IncreaseGetIndex()`.
+
+---
+
+## 6. Additional Notes
+
+- **Thread safety**: concurrent writes to a `ConnectResource` should go through `GetLock()` or rely on the internal sync of `WriteQueue`.
+- **Lifecycle**: a `ConnectResource` typically shares its lifecycle with the set of same-address `net.Conn` instances; `CheckLocks` reclaims it when the refcount reaches 0.
+- **Shared with the passive mirror**: `GopacketTrafficMirror` injects the same `FromTo` / `ListenType` / etc. keys into ctx — so one `WriteFunc` can serve both the active proxy and the passive mirror.
+
+---
+
+> See also: [SimpleTCPServer](./simpleTCPServer) · [LockGroup](./lockgroup)

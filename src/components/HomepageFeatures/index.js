@@ -8,25 +8,25 @@ const FeatureList = [
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        基于 Go 语言构建，提供卓越的性能和低延迟，适合高并发网络应用场景。
+        基于 Go 构建，原生协程 + 写队列零拷贝路径，单实例即可承载高并发 TCP/HTTP 流量代理与录制。
       </>
     ),
   },
   {
-    title: '灵活扩展',
+    title: '主动 + 被动双模式',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        模块化设计，支持自定义扩展和插件开发，轻松适应各种网络应用需求。
+        既能作为 SimpleTCPServer 主动代理监听端口，也能通过 gopacket 抓包实现被动镜像，零修改部署即可上线。
       </>
     ),
   },
   {
-    title: '易于使用',
+    title: '可回放、可改写',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        简洁的 API 设计和完善的文档，让开发者能够快速上手并构建复杂的网络应用。
+        TcpPlayer 支持按原始时序重放录制流量，DataParser 钩子可在回放前任意改写包内容，覆盖回归、压测、染色等场景。
       </>
     ),
   },

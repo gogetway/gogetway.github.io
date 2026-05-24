@@ -20,11 +20,20 @@ const sidebars = {
     'quickstart',
     {
       type: 'category',
+      label: 'Core Components',
+      items: [
+        'simpleTCPServer',
+        'gopacketMirror',
+        'tcpPlayer',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Core APIs',
       items: [
         'connectResource',
         'lockgroup',
-        'tcpPlayer'
+        'proto',
       ],
     }
   ],

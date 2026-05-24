@@ -3,8 +3,12 @@
     "message": "Next",
     "description": "The label for version current"
   },
+  "sidebar.tutorialSidebar.category.Core Components": {
+    "message": "核心组件",
+    "description": "The label for category 'Core Components' in sidebar 'tutorialSidebar'"
+  },
   "sidebar.tutorialSidebar.category.Core APIs": {
-    "message": "Core APIs",
+    "message": "核心 API",
     "description": "The label for category 'Core APIs' in sidebar 'tutorialSidebar'"
   }
 }

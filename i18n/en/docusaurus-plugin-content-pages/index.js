@@ -19,8 +19,8 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro">
-            Get Started - 5min ⏱️
+            to="/docs/quickstart">
+            Get Started - 5 min ⏱️
           </Link>
         </div>
       </div>
@@ -33,41 +33,41 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title} - Network Gateway Framework`}
-      description="GoGetway is a powerful network gateway framework for building high-performance TCP/IP applications">
+      description="GoGetway is a Go framework for building TCP/HTTP gateways with traffic recording, replay, and passive mirroring">
       <HomepageHeader />
       <main>
         <HomepageFeatures />
         <section className={styles.features}>
           <div className="container">
-            <h2>Key Features</h2>
+            <h2>Core Components</h2>
             <div className="row">
               <div className="col col--4">
                 <div className="card">
                   <div className="card__header">
-                    <h3>ConnectResource Management</h3>
+                    <h3>SimpleTCPServer (Active Proxy)</h3>
                   </div>
                   <div className="card__body">
-                    <p>Flexible resource management for network connections with built-in write queues and synchronization mechanisms.</p>
+                    <p>Listens locally, forwards upstream, and records bidirectional traffic in link order to any Writer or WriteFunc.</p>
                   </div>
                 </div>
               </div>
               <div className="col col--4">
                 <div className="card">
                   <div className="card__header">
-                    <h3>LockGroup System</h3>
+                    <h3>GopacketTrafficMirror (Passive Mirror)</h3>
                   </div>
                   <div className="card__body">
-                    <p>Advanced locking mechanisms for concurrent access control and resource synchronization.</p>
+                    <p>Zero-deploy capture via pcap / AF_PACKET / eBPF, with TCP reassembly for sidecar forwarding or pure recording.</p>
                   </div>
                 </div>
               </div>
               <div className="col col--4">
                 <div className="card">
                   <div className="card__header">
-                    <h3>TcpPlayer Replay</h3>
+                    <h3>TcpPlayer (Traffic Replay)</h3>
                   </div>
                   <div className="card__body">
-                    <p>TCP traffic replay capabilities for testing and simulating network interactions.</p>
+                    <p>Replays recorded traffic to a target service with original timing, plus a custom parser hook for packet mutation.</p>
                   </div>
                 </div>
               </div>

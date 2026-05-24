@@ -3,6 +3,10 @@
     "message": "Next",
     "description": "The label for version current"
   },
+  "sidebar.tutorialSidebar.category.Core Components": {
+    "message": "Core Components",
+    "description": "The label for category 'Core Components' in sidebar 'tutorialSidebar'"
+  },
   "sidebar.tutorialSidebar.category.Core APIs": {
     "message": "Core APIs",
     "description": "The label for category 'Core APIs' in sidebar 'tutorialSidebar'"

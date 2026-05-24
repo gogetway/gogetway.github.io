@@ -1,33 +1,34 @@
-
 # TcpPlayer 接口说明文档
 
 ## 概述
 
-`TcpPlayer` 是一个用于 TCP 流量重放（Traffic Replay）的结构体，支持从记录的数据中读取并按原始通信顺序向客户端或目标服务端重放流量。它支持时间戳控制、自定义数据解析逻辑，并可用于模拟真实网络交互行为。
+`TcpPlayer` 用于把 `gogetway` 录制下来的流量重新发送给目标服务，支持按时间戳延迟回放、并通过自定义解析器（`DataParser`）在回放前修改包内容。常用于回归测试、流量染色、压力复现等场景。
+
+源码位置：[tcpPlayback/tcpPlayer.go](https://github.com/wangshiben/gogetway/blob/master/tcpPlayback/tcpPlayer.go)
 
 ---
 
-## 结构体定义
+## 1. 结构体定义
 
 ```go
 type TcpPlayer struct {
-    Target           string              // 目标地址（如 "192.168.1.10:80"）
-    Client           string              // 客户端地址（如 "127.0.0.1:50000"）
-    clientConn       net.Conn            // 与客户端的活跃连接
-    targetConn       net.Conn            // 与目标服务的活跃连接
-    replayTime       bool                // 是否启用基于时间戳的延迟重放
-    clientTimeRecord lockMap.Lock        // 记录最后一次向客户端发送包的时间（键："packageTime", "lastCalled"）
-    targetTimeRecord lockMap.Lock        // 记录最后一次向目标发送包的时间（键："packageTime", "lastCalled"）
+    Target           string         // 目标地址（匹配录制中的 To 字符串）
+    Client           string         // 客户端地址（匹配录制中的 From），可空
+    clientConn       net.Conn       // 私有，客户端方向连接
+    targetConn       net.Conn       // 私有，目标方向连接
+    replayTime       bool           // 是否按原始时间间隔回放
+    clientTimeRecord lockMap.Lock   // 私有，时序状态
+    targetTimeRecord lockMap.Lock   // 私有，时序状态
 }
 ```
 
-> **常量说明**：
-> - `PackageTime = "packageTime"`：存储包原始时间戳。
-> - `LastCalled = "lastCalled"`：存储上一次实际发送时间。
+> **约定**：
+> - 录制文件中的每个包带有 `from...to` 字段，`Target` / `Client` 用于和这些字段比对，决定包要往哪个连接发。
+> - `replayTime = true` 时，`wait` 会根据相邻包的时间差进行 `sleep`，以毫秒级精度模拟真实时序。
 
 ---
 
-## 类型定义
+## 2. 类型定义
 
 ### `DataParser`
 
@@ -35,106 +36,176 @@ type TcpPlayer struct {
 type DataParser func(data *proto.Packet) (*proto.Packet, error)
 ```
 
-- **用途**：在重放前对原始数据包进行解析或修改（例如替换时间戳、篡改字段等）。
-- **输入**：原始 `*proto.Packet`。
-- **输出**：
-    - 修改后的 `*proto.Packet`；
-    - 若处理失败，返回非 `nil` 的 `error`，该包将被跳过。
-
----
-
-## 方法说明
-
-### 1. `SendSinglePacket(reader io.Reader, to string, parser DataParser)`
-
-#### 功能
-从 `reader` 中读取序列化的流量数据，筛选出 **发往指定地址 `to`** 的单向流量包，并依次重放（仅写入对应连接），支持自定义解析逻辑。
-
-#### 参数
 | 参数 | 类型 | 说明 |
-|------|------|------|
-| `reader` | `io.Reader` | 包含序列化 `proto.Packet` 数据的读取器（通常来自文件或内存缓冲区） |
-| `to` | `string` | 目标地址（如 `"192.168.1.10:80"`），仅重放 `packet.To == to` 的包 |
-| `parser` | `DataParser` | 可选的包解析/修改函数；若为 `nil`，则直接使用原始包 |
+|---|---|---|
+| `data` | `*proto.Packet` | 反序列化后的包，可修改字段 |
 
-#### 行为说明
-- 使用 `proto.ReadProtoFromReader` 解析流式数据；
-- 对每个包调用 `parser`（若提供）；
-- **仅当 `packet.To == to` 时才处理该包**（但当前实现中未实际发送，需注意：此方法目前为空操作，可能为占位或待完善）；
-- 解析或反序列化错误将被记录日志，但不会中断流程。
+| 返回值 | 类型 | 说明 |
+|---|---|---|
+| `*proto.Packet` | `*proto.Packet` | 返回 `nil` 表示跳过此包 |
+| `err` | error | 非 nil 时仅记日志，继续下一个包 |
 
-> ⚠️ **注意**：当前方法体中缺少实际的发送逻辑（`if packet != nil && packet.To == to { }` 为空），调用者需确认是否已补充实现，或该方法仅为框架预留。
-
----
-
-### 2. `SendPacket(packet proto.Packet) error`
-
-#### 功能
-根据包的来源（`packet.From`），将数据写入对应的连接（客户端或目标服务），并可选地根据时间戳进行延迟控制。
-
-#### 参数
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `packet` | `proto.Packet` | 要重放的数据包，必须包含有效 `From` 和 `Data` 字段 |
-
-#### 返回值
-- 成功：`nil`
-- 失败：`error`（如连接写入失败、未知来源地址等）
-
-#### 行为说明
-1. 若 `packet.From == t.Client`：
-    - 调用 `t.waitingAndSend(true, packet.Timestamp())`（等待至合适时间）；
-    - 通过 `t.clientConn.Write(packet.Data)` 发送给客户端。
-2. 若 `packet.From == t.Target`：
-    - 调用 `t.waitingAndSend(false, packet.Timestamp())`；
-    - 通过 `t.targetConn.Write(packet.Data)` 发送给目标服务。
-3. 否则返回错误：`"packet from error"`。
-
-> ✅ **关键特性**：
-> - 支持双向流量重放；
-> - 自动路由到正确连接；
-> - 时间控制由 `waitingAndSend` 实现（依赖 `replayTime` 字段及 `clientTimeRecord` / `targetTimeRecord`）。
-
----
-
-## 使用示例（伪代码）
+典型用途：替换录制时的真实地址、token 改写、按比例采样。
 
 ```go
-// 初始化连接
-clientConn, _ := net.Dial("tcp", "127.0.0.1:50000")
-targetConn, _ := net.Dial("tcp", "192.168.1.10:80")
+parser := func(p *proto.Packet) (*proto.Packet, error) {
+    p.Data = bytes.ReplaceAll(p.Data, []byte("Bearer old-token"), []byte("Bearer new-token"))
+    p.To = "127.0.0.1:9999"
+    return p, nil
+}
+```
 
-player := &TcpPlayer{
-    Client:     "127.0.0.1:50000",
-    Target:     "192.168.1.10:80",
-    clientConn: clientConn,
-    targetConn: targetConn,
-    replayTime: true, // 启用时间同步重放
+---
+
+## 3. 构造与方法
+
+### 3.1 `NewTCPPlayer`
+
+```go
+func NewTCPPlayer(
+    target string,
+    targetConnect net.Conn,
+    Client string,
+    ClientConn net.Conn,
+    replayTime bool,
+) *TcpPlayer
+```
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `target` | string | 目标地址字符串（用于匹配 `packet.To`） |
+| `targetConnect` | `net.Conn` | 已建立的目标连接，可为 nil（仅用 `SendSinglePacket` 时） |
+| `Client` | string | 客户端标识（用于匹配 `packet.From`） |
+| `ClientConn` | `net.Conn` | 客户端连接，可为 nil |
+| `replayTime` | bool | true 时按原始间隔 sleep |
+
+---
+
+### 3.2 `ReplayToTarget`（推荐）
+
+```go
+func (t *TcpPlayer) ReplayToTarget(
+    reader io.Reader,
+    recordedTo string,
+    parser DataParser,
+) (int, error)
+```
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `reader` | `io.Reader` | 录制文件流 |
+| `recordedTo` | string | 录制中目标字符串，用于过滤（`packet.To == recordedTo` 才回放） |
+| `parser` | `DataParser` | 可选回放前修改钩子 |
+
+| 返回值 | 类型 | 说明 |
+|---|---|---|
+| 第一个 | int | 成功回放的包数 |
+| 第二个 | error | 第一个写入错误，或 `recordedTo == ""` 等参数错误，或没有任何包被回放 |
+
+---
+
+### 3.3 `ReplayFileToTarget`（一行回放整个文件）
+
+```go
+func ReplayFileToTarget(
+    filePath, target string,
+    replayTime bool,
+    parser DataParser,
+) (int, error)
+```
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `filePath` | string | 录制文件路径 |
+| `target` | string | 实际要 dial 的目标地址（可与录制时不同） |
+| `replayTime` | bool | 是否按原始时间间隔回放 |
+| `parser` | `DataParser` | 可选回放前修改钩子 |
+
+返回值：回放的包数 + error。内部会自动调用 `DetectRecordedTargetFromFile` 推断 `recordedTo`。
+
+---
+
+### 3.4 `DetectRecordedTargetFromFile`
+
+```go
+func DetectRecordedTargetFromFile(filePath string) (string, error)
+```
+
+扫一遍文件，统计每个 `packet.To` 的出现次数，返回出现最多的那个。用于自动识别"原录制时的目标地址"。
+
+---
+
+### 3.5 `SendSinglePacket`（不推荐）
+
+```go
+func (t *TcpPlayer) SendSinglePacket(reader io.Reader, to string, parser DataParser)
+```
+
+老接口，只发往单一方向。读取错误直接 `panic`，**不建议在生产使用**，请优先选 `ReplayToTarget`。
+
+---
+
+## 4. 时间回放
+
+`NewTCPPlayer(..., replayTime=true)`：根据初始化之间的时间间隔进行 sleep，模拟真实时序。等待逻辑见 `tcpPlayback/tcpPlayer.go` 的 `wait` 函数。
+
+> **注意**：`wait` 在每个 `lockMap.Lock` 的 `Other()` 上挂一个 `map[string]int64` 来记录上一个包时间，与当前时间的差。如果你自己的 lock 实现不允许 `UpdateOther` 覆盖 map，会 panic。
+
+---
+
+## 5. 使用示例
+
+### 5.1 一行回放整个录制文件
+
+```go
+parser := func(p *proto.Packet) (*proto.Packet, error) {
+    // 替换 token、改写目标地址等
+    p.Data = bytes.ReplaceAll(p.Data, []byte("Bearer old"), []byte("Bearer new"))
+    return p, nil
 }
 
-// 重放一个包
-err := player.SendPacket(recordedPacket)
+count, err := tcpPlayback.ReplayFileToTarget(
+    "./traffic.log",
+    "127.0.0.1:9999",
+    false, // 不按原始时间间隔
+    parser,
+)
 if err != nil {
     log.Fatal(err)
 }
+log.Printf("replayed %d packets", count)
+```
 
-// 或从文件重放单向流量（注意：当前 SendSinglePacket 无实际发送逻辑）
-file, _ := os.Open("traffic.bin")
-defer file.Close()
-player.SendSinglePacket(file, "192.168.1.10:80", myCustomParser)
+### 5.2 自行管理连接 + 流式回放
+
+```go
+targetConn, _ := net.Dial("tcp", "127.0.0.1:9999")
+defer targetConn.Close()
+
+player := tcpPlayback.NewTCPPlayer(
+    "127.0.0.1:8080", // 录制时的目标地址（用于匹配）
+    targetConn,
+    "",  // 不关心客户端方向
+    nil,
+    true, // 按原始时间间隔回放
+)
+
+f, _ := os.Open("./traffic.log")
+defer f.Close()
+
+count, err := player.ReplayToTarget(f, "127.0.0.1:8080", nil)
+log.Printf("replayed=%d err=%v", count, err)
 ```
 
 ---
 
-## 注意事项
+## 6. 注意事项
 
-1. **连接管理**：调用者需确保 `clientConn` 和 `targetConn` 在调用期间保持有效。
-2. **线程安全**：`lockMap.Lock` 用于保护时间记录，但 `TcpPlayer` 本身非完全线程安全，建议单 goroutine 使用或外部加锁。
-3. **时间重放**：`replayTime` 为 `true` 时，`waitingAndSend` 会根据包间时间差进行 sleep，以模拟真实时序。
-4. **SendSinglePacket 状态**：当前实现未实际发送数据，请确认是否为待完成功能。
+1. **连接管理**：调用方负责 `clientConn` / `targetConn` 的生命周期，`TcpPlayer` 不会自动关闭。
+2. **线程安全**：`lockMap.Lock` 保护时序记录，但 `TcpPlayer` 本身不是完全线程安全，建议每个 player 实例由单一 goroutine 驱动。
+3. **回放精度**：`replayTime=true` 时按毫秒级 sleep，亚毫秒精度会被丢失。
+4. **多目标录制**：若录制文件里的 `packet.To` 来自多个目标，`ReplayFileToTarget` 只会回放出现次数最多的那个。其它目标请自行用 `proto.ReadProtoFromReader` + `proto.UnMarshal` 全量解析后过滤。
 
---- 
+---
 
-> 文档版本：v1.0  
-> 最后更新：2026-01-12
-```
+> 参考：[proto.Packet 结构](./proto) · [SimpleTCPServer 录制](./simpleTCPServer)
