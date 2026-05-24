@@ -1,0 +1,24 @@
+{
+  "id": "tcpPlayer",
+  "title": "TcpPlayer 接口说明文档",
+  "description": "概述",
+  "source": "@site/docs/tcpPlayer.md",
+  "sourceDirName": ".",
+  "slug": "/tcpPlayer",
+  "permalink": "/docs/tcpPlayer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/tcpPlayer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "GopacketTrafficMirror 被动镜像",
+    "permalink": "/docs/gopacketMirror"
+  },
+  "next": {
+    "title": "ConnectResource / ResourceGroup",
+    "permalink": "/docs/connectResource"
+  }
+}

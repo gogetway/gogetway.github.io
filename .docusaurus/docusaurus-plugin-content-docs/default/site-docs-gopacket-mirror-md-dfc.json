@@ -1,0 +1,24 @@
+{
+  "id": "gopacketMirror",
+  "title": "GopacketTrafficMirror 被动镜像",
+  "description": "被动镜像在不修改部署的情况下监听任意端口（pcap / AF_PACKET / eBPF），通过 gopacket 抓包 + tcpassembly 重组 TCP 流，再走自定义钩子转发 / 记录。",
+  "source": "@site/docs/gopacketMirror.md",
+  "sourceDirName": ".",
+  "slug": "/gopacketMirror",
+  "permalink": "/docs/gopacketMirror",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/gopacketMirror.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "SimpleTCPServer 主动代理",
+    "permalink": "/docs/simpleTCPServer"
+  },
+  "next": {
+    "title": "TcpPlayer 接口说明文档",
+    "permalink": "/docs/tcpPlayer"
+  }
+}

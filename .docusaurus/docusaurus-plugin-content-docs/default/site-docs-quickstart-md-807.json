@@ -1,0 +1,23 @@
+{
+  "id": "quickstart",
+  "title": "快速开始",
+  "description": "gogetway 是一个用于构建 TCP/HTTP 网关、流量录制、流量重放与被动镜像的 Go 框架。",
+  "source": "@site/docs/quickstart.md",
+  "sourceDirName": ".",
+  "slug": "/quickstart",
+  "permalink": "/docs/quickstart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/quickstart.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "SimpleTCPServer 主动代理",
+    "permalink": "/docs/simpleTCPServer"
+  }
+}

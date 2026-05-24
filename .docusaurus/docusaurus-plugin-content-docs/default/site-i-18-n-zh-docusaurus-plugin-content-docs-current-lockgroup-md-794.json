@@ -1,0 +1,24 @@
+{
+  "id": "lockgroup",
+  "title": "接口文档",
+  "description": "1. LockGroup 接口",
+  "source": "@site/i18n/zh/docusaurus-plugin-content-docs/current/lockgroup.md",
+  "sourceDirName": ".",
+  "slug": "/lockgroup",
+  "permalink": "/docs/lockgroup",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/lockgroup.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "connectResource",
+    "permalink": "/docs/connectResource"
+  },
+  "next": {
+    "title": "proto 录制格式与协议解析",
+    "permalink": "/docs/proto"
+  }
+}

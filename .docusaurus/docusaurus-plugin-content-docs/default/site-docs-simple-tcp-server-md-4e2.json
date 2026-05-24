@@ -1,0 +1,24 @@
+{
+  "id": "simpleTCPServer",
+  "title": "SimpleTCPServer 主动代理",
+  "description": "SimpleTCPServer 监听一个本地端口，接受客户端连接后向上游 dial，再双向复制流量并按链路号序记录到任意 io.Writer / WriteFunc。这是 gogetway 主动代理模式的核心结构。",
+  "source": "@site/docs/simpleTCPServer.md",
+  "sourceDirName": ".",
+  "slug": "/simpleTCPServer",
+  "permalink": "/docs/simpleTCPServer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/simpleTCPServer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "快速开始",
+    "permalink": "/docs/quickstart"
+  },
+  "next": {
+    "title": "GopacketTrafficMirror 被动镜像",
+    "permalink": "/docs/gopacketMirror"
+  }
+}

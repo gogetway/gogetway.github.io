@@ -1,0 +1,24 @@
+{
+  "id": "gopacketMirror",
+  "title": "GopacketTrafficMirror — Passive Mirror",
+  "description": "The passive mirror captures traffic on any port without changing the existing deployment (pcap / AF_PACKET / eBPF). Packets are captured via gopacket and reassembled with tcpassembly, then forwarded / recorded through pluggable hooks.",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/gopacketMirror.md",
+  "sourceDirName": ".",
+  "slug": "/gopacketMirror",
+  "permalink": "/en/docs/gopacketMirror",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/gopacketMirror.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "SimpleTCPServer — Active Proxy",
+    "permalink": "/en/docs/simpleTCPServer"
+  },
+  "next": {
+    "title": "TcpPlayer",
+    "permalink": "/en/docs/tcpPlayer"
+  }
+}

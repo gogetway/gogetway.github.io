@@ -1,0 +1,24 @@
+{
+  "id": "lockgroup",
+  "title": "Interface Documentation",
+  "description": "1. LockGroup Interface",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/lockgroup.md",
+  "sourceDirName": ".",
+  "slug": "/lockgroup",
+  "permalink": "/en/docs/lockgroup",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/lockgroup.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "ConnectResource / ResourceGroup",
+    "permalink": "/en/docs/connectResource"
+  },
+  "next": {
+    "title": "proto — Recording Format and Codec",
+    "permalink": "/en/docs/proto"
+  }
+}

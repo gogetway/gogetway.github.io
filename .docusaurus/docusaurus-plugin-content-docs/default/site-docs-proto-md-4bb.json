@@ -1,0 +1,20 @@
+{
+  "id": "proto",
+  "title": "proto 录制格式与协议解析",
+  "description": "gogetway 把所有捕获的字节流以自定义二进制格式串到一个文件里。proto 包负责\"写入\"与\"读回\"。",
+  "source": "@site/docs/proto.md",
+  "sourceDirName": ".",
+  "slug": "/proto",
+  "permalink": "/docs/proto",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/proto.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "接口文档",
+    "permalink": "/docs/lockgroup"
+  }
+}

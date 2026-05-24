@@ -1,0 +1,20 @@
+{
+  "id": "proto",
+  "title": "proto — Recording Format and Codec",
+  "description": "gogetway serializes all captured byte streams into one file using a custom binary format. The proto package handles writing and parsing.",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/proto.md",
+  "sourceDirName": ".",
+  "slug": "/proto",
+  "permalink": "/en/docs/proto",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/proto.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Interface Documentation",
+    "permalink": "/en/docs/lockgroup"
+  }
+}

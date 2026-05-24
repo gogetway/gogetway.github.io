@@ -1,0 +1,24 @@
+{
+  "id": "lockgroup",
+  "title": "接口文档",
+  "description": "1. LockGroup 接口",
+  "source": "@site/docs/lockgroup.md",
+  "sourceDirName": ".",
+  "slug": "/lockgroup",
+  "permalink": "/docs/lockgroup",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/lockgroup.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "ConnectResource / ResourceGroup",
+    "permalink": "/docs/connectResource"
+  },
+  "next": {
+    "title": "proto 录制格式与协议解析",
+    "permalink": "/docs/proto"
+  }
+}

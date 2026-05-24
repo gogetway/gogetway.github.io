@@ -1,0 +1,20 @@
+{
+  "id": "quickstart",
+  "title": "快速开始",
+  "description": "开发快速引导",
+  "source": "@site/i18n/zh/docusaurus-plugin-content-docs/current/quickstart.md",
+  "sourceDirName": ".",
+  "slug": "/quickstart",
+  "permalink": "/docs/quickstart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/quickstart.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "SimpleTCPServer 主动代理",
+    "permalink": "/docs/simpleTCPServer"
+  }
+}

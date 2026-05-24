@@ -1,0 +1,24 @@
+{
+  "id": "connectResource",
+  "title": "ConnectResource / ResourceGroup",
+  "description": "ConnectResource abstracts the \"write resource\" bound to a TCP connection; ResourceGroup is the factory that produces them. Default implementations live in getwayServer/Resource.go and getwayServer/resourceGroup.go, and they work by \"map-by-client-address and reuse\".",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/connectResource.md",
+  "sourceDirName": ".",
+  "slug": "/connectResource",
+  "permalink": "/en/docs/connectResource",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/connectResource.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "TcpPlayer",
+    "permalink": "/en/docs/tcpPlayer"
+  },
+  "next": {
+    "title": "Interface Documentation",
+    "permalink": "/en/docs/lockgroup"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "quickstart",
+  "title": "Quick Start",
+  "description": "gogetway is a Go framework for building TCP/HTTP gateways with traffic recording, replay, and passive mirroring.",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/quickstart.md",
+  "sourceDirName": ".",
+  "slug": "/quickstart",
+  "permalink": "/en/docs/quickstart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/quickstart.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "SimpleTCPServer — Active Proxy",
+    "permalink": "/en/docs/simpleTCPServer"
+  }
+}

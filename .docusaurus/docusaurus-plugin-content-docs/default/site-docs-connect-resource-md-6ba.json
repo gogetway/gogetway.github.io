@@ -1,0 +1,24 @@
+{
+  "id": "connectResource",
+  "title": "ConnectResource / ResourceGroup",
+  "description": "ConnectResource 是每条 TCP 连接绑定的\"写资源\"抽象，ResourceGroup 是产生它们的工厂。",
+  "source": "@site/docs/connectResource.md",
+  "sourceDirName": ".",
+  "slug": "/connectResource",
+  "permalink": "/docs/connectResource",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/connectResource.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "TcpPlayer 接口说明文档",
+    "permalink": "/docs/tcpPlayer"
+  },
+  "next": {
+    "title": "接口文档",
+    "permalink": "/docs/lockgroup"
+  }
+}

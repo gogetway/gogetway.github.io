@@ -1,0 +1,24 @@
+{
+  "id": "tcpPlayer",
+  "title": "TcpPlayer",
+  "description": "Overview",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/tcpPlayer.md",
+  "sourceDirName": ".",
+  "slug": "/tcpPlayer",
+  "permalink": "/en/docs/tcpPlayer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/tcpPlayer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "GopacketTrafficMirror — Passive Mirror",
+    "permalink": "/en/docs/gopacketMirror"
+  },
+  "next": {
+    "title": "ConnectResource / ResourceGroup",
+    "permalink": "/en/docs/connectResource"
+  }
+}

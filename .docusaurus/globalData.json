@@ -1,0 +1,63 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/en/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/en/docs",
+          "mainDocId": "quickstart",
+          "docs": [
+            {
+              "id": "connectResource",
+              "path": "/en/docs/connectResource",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "gopacketMirror",
+              "path": "/en/docs/gopacketMirror",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "lockgroup",
+              "path": "/en/docs/lockgroup",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "proto",
+              "path": "/en/docs/proto",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "quickstart",
+              "path": "/en/docs/quickstart",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "simpleTCPServer",
+              "path": "/en/docs/simpleTCPServer",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "tcpPlayer",
+              "path": "/en/docs/tcpPlayer",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/en/docs/quickstart",
+                "label": "quickstart"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

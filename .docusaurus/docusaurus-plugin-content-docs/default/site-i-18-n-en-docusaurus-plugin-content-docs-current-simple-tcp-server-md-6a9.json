@@ -1,0 +1,24 @@
+{
+  "id": "simpleTCPServer",
+  "title": "SimpleTCPServer — Active Proxy",
+  "description": "SimpleTCPServer listens on a local port, accepts client connections, dials an upstream, then bidirectionally copies traffic while recording it (in serial order) to any io.Writer / WriteFunc. This is the core of the active-proxy mode in gogetway.",
+  "source": "@site/i18n/en/docusaurus-plugin-content-docs/current/simpleTCPServer.md",
+  "sourceDirName": ".",
+  "slug": "/simpleTCPServer",
+  "permalink": "/en/docs/simpleTCPServer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/gogetway/gogetway.github.io/tree/master/docs/simpleTCPServer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/en/docs/quickstart"
+  },
+  "next": {
+    "title": "GopacketTrafficMirror — Passive Mirror",
+    "permalink": "/en/docs/gopacketMirror"
+  }
+}
